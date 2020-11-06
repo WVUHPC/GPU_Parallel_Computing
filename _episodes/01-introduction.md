@@ -30,7 +30,120 @@ As such GPUs were designed for very specific tasks and not all tasks can be effi
 
 First is CPU multithreading execution. In the next lesson we will demonstrate one example of OpenMP a popular model for these kind of parallelism. In CPU multithreading we use the ability of modern CPUs to have several cores that see the same memory. The next level is coprocessor parallelism, exemplified with OpenACC, OpenCL and CUDA. Using for example GPUs certain tasks what require many threads with relatively small amount of memory can be processed on those devices and get an advantage from them. The final level is distributed computing with a prototypical case is MPI. We will demonstrate a brief example of MPI in the next lesson but it is out of scope for this workshop.
 
+## GPUs on Thorny Flat
+
+**NVIDIA Quadro RTX6000**
 
 
+<img src="../fig/rtx6000.png" alt="NVIDIA RTX 6000" />
+
+
+|                               | RTX 6000 | P 6000 |
+|:------------------------------|:-------|:---------|
+| Architecture                  | Turing | Pascal   |
+|CUDA Parallel-Processing Cores |	4,608  |  3,840   |
+|Bus width                      |384 bit | 384 bit  |    
+|Memory Clock                   | 1750   | 1127 MHz |
+|NVIDIA Tensor Cores            |	576 | |
+|NVIDIA RT Cores                |	72 | |
+|GPU Memory |	24 GB GDDR6 | 24 GB GDDR5X |
+|FP32 Performance |	16.3 TFLOPS | 12.63 TFLOPS |
+|FP64 Performance | 564 GFLOPS | 394 GFLOPS |
+|Max Power Consumption |	260 W | 250 W |
+|CUDA   |	6.1 | 6.1 |
+|OpenCL | 1.2 | 1.2 |
+
+## Knowing the GPUs on the machine
+
+A first view of the availability of GPUs can be seen with the command:
+
+~~~
+$> nvidia-smi
+~~~
+{: .source}
+
+Thorny Flat has several machines with GPUs the output in one of them is:
+
+~~~
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 455.32.00    Driver Version: 455.32.00    CUDA Version: 11.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Quadro P6000        Off  | 00000000:37:00.0 Off |                  Off |
+| 16%   28C    P0    58W / 250W |      0MiB / 24449MiB |      0%   E. Process |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  Quadro P6000        Off  | 00000000:AF:00.0 Off |                  Off |
+| 17%   27C    P0    57W / 250W |      0MiB / 24449MiB |      0%   E. Process |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  Quadro P6000        Off  | 00000000:D8:00.0 Off |                  Off |
+| 16%   28C    P0    58W / 250W |      0MiB / 24449MiB |      0%   E. Process |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+~~~
+{: .output}
+
+~~~
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 455.32.00    Driver Version: 455.32.00    CUDA Version: 11.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Quadro RTX 6000     Off  | 00000000:1A:00.0 Off |                    0 |
+| N/A   38C    P0    55W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   1  Quadro RTX 6000     Off  | 00000000:1B:00.0 Off |                    0 |
+| N/A   39C    P0    56W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   2  Quadro RTX 6000     Off  | 00000000:3D:00.0 Off |                    0 |
+| N/A   39C    P0    57W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   3  Quadro RTX 6000     Off  | 00000000:3E:00.0 Off |                    0 |
+| N/A   40C    P0    57W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   4  Quadro RTX 6000     Off  | 00000000:8B:00.0 Off |                    0 |
+| N/A   37C    P0    56W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   5  Quadro RTX 6000     Off  | 00000000:8C:00.0 Off |                    0 |
+| N/A   37C    P0    56W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   6  Quadro RTX 6000     Off  | 00000000:B5:00.0 Off |                    0 |
+| N/A   37C    P0    54W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+|   7  Quadro RTX 6000     Off  | 00000000:B6:00.0 Off |                    0 |
+| N/A   37C    P0    57W / 250W |      0MiB / 22698MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+~~~
+{: .output}
 
 {% include links.md %}
